@@ -4,7 +4,7 @@ function build() {
   const options: BuildOptions = {
     entryPoints: ['src/index.ts'],
     bundle: true,
-    // minify: true,
+    minify: true,
     outdir: 'dist',
     target: 'es6',
   };
