@@ -1,4 +1,4 @@
 {
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "cSpell.words": ["iife", "outdir"]
+  "cSpell.words": ["iife", "outdir", "outfile"]
 }
