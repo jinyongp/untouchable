@@ -56,17 +56,21 @@ describe('untouchable: undetectable', () => {
     revoke = untouchable(target, 'func', callback);
   });
 
-  test.skip('is not detected as a Proxy by is-proxy module', () => {
+  test('is not detected as a Proxy by is-proxy module', () => {
     const proxy = new Proxy(() => {}, {});
     expect(isProxy1(proxy)).toBe(true);
+
+    untouchable(target, 'func', () => {}, { bind: target });
 
     expect(isProxy1(target)).toBe(false);
     expect(isProxy1(target.func)).toBe(false);
   });
 
-  test.skip('is not detected as a Proxy by node:util.types isProxy function', () => {
+  test('is not detected as a Proxy by node:util.types isProxy function', () => {
     const proxy = new Proxy(() => {}, {});
     expect(isProxy2(proxy)).toBe(true);
+
+    untouchable(target, 'func', () => {}, { bind: target });
 
     expect(isProxy2(target)).toBe(false);
     expect(isProxy2(target.func)).toBe(false);
