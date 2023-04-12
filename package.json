@@ -16,12 +16,13 @@
     "import": "./dist/index.mjs",
     "require": "./dist/index.cjs"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/jinyongp/untouchable.git"
-  },
+  "files": [
+    "dist"
+  ],
+  "repository": "github:jinyongp/untouchable",
   "bugs": {
-    "url": "https://github.com/jinyongp/untouchable/issues"
+    "url": "https://github.com/jinyongp/untouchable/issues",
+    "email": "dev.jinyongp@gmail.com"
   },
   "license": "MIT",
   "scripts": {
