@@ -1,24 +1,22 @@
 export type Options = {
-  /**
-   * @default false
-   */
   bind?: object;
 };
 
-function untouchable<
-  From extends Record<PropertyKey, any>,
-  Key extends keyof From,
-  Args extends Parameters<From[Key]>
->(
-  from: From,
-  key: Key,
-  handler: (this: From, ...args: Args) => void,
+type Handler<T extends Record<PropertyKey, any>> = (
+  this: T,
+  ...args: Parameters<T[keyof T]>
+) => any;
+
+function untouchable<T extends Record<PropertyKey, any>>(
+  from: T,
+  key: keyof T,
+  handler: Handler<T>,
   options?: Options
 ) {
   const { bind = false } = options ?? {};
 
   const _ = Proxy.revocable(from[key], {
-    apply(target, thisArg: From, args: Args) {
+    apply(target, thisArg: T, args) {
       Reflect.apply(handler, thisArg, args);
       return Reflect.apply(target, thisArg, args);
     },
