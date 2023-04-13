@@ -19,6 +19,7 @@
   "files": [
     "dist"
   ],
+  "readme": "README.md",
   "repository": "github:jinyongp/untouchable",
   "bugs": {
     "url": "https://github.com/jinyongp/untouchable/issues",
