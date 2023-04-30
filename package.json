@@ -30,7 +30,7 @@
     "test": "npm-run-all -p test:*",
     "test:unit": "jest",
     "test:example": "ts-node example/index.ts",
-    "prepack": "npm run build",
+    "prepublishOnly": "npm run build",
     "build": "rimraf dist && npm-run-all -p build:*",
     "build:esm": "esbuild src/index.ts --outfile=dist/index.mjs --format=esm --target=es6 --minify",
     "build:cjs": "esbuild src/index.ts --outfile=dist/index.cjs --format=cjs --target=es6 --minify",
