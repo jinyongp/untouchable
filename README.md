@@ -21,45 +21,48 @@ Here's an example of how to use the untouchable library:
 ```ts
 import untouchable from 'untouchable';
 
-const originalFunction = (a: number, b: number) => a + b;
-const target = { myFunction: originalFunction };
+class Example {
+  multiplier = 3;
 
-const callback = function (this: typeof target, a: number, b: number) {
-  console.log('Callback called with arguments:', a, b);
-};
+  func(a: number, b: number) {
+    return (a + b) * this.multiplier;
+  }
+}
 
-const options = {
-  bind: target,
-};
+function Patcher(this: Example, a: number, b: number) {
+  console.log('Patched successfully!');
+  console.assert(this instanceof Example);
+  console.assert(this.multiplier === 3);
+  console.assert(a === 1);
+  console.assert(b === 2);
+}
 
-const revoke = untouchable(target, 'myFunction', callback, options);
+const revoke = untouchable(Example.prototype, 'func', Patcher);
 
-// Calling the patched function
-const result = target.myFunction(1, 2);
-console.log('Result:', result); // 3
+const example = new Example();
 
-// Reverting back to the original function
+console.assert(example.func(1, 2) === 9); // Patched
+
 revoke();
+
+console.assert(example.func(3, 4) === 21); // Not patched
 ```
 
 ## API
 
 ### `untouchable`
 
-```ts
-function untouchable<T extends Record<PropertyKey, any>>(
-  from: T,
-  key: keyof T,
-  handler: Handler<T>,
-  options?: Options
-): () => void;
-```
+**Parameters**
 
 - `from`: The object containing the function to be patched.
 - `key`: The key of the function to be patched.
 - `handler`: The callback function to be invoked when the patched function is called. It receives the same arguments as the original function.
-- `options`: An optional object containing additional options.
+- `options` (optional):
   - `bind`: An optional object to which the Proxy should be bound. By default, the Proxy is not bound to any object.
+
+**Returns**
+
+- `Revoke function`: call this to restore the original function.
 
 ## License
 
