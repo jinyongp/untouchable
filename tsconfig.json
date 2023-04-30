@@ -7,7 +7,7 @@
     "strict": true,
     "outDir": "dist",
     "sourceMap": true,
-    "lib": ["ESNext"],
+    "lib": ["DOM", "ESNext"],
     "types": ["jest"],
     "noImplicitAny": true,
     "esModuleInterop": true,
