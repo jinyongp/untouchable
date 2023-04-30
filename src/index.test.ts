@@ -41,9 +41,15 @@ describe('untouchable: functionality', () => {
     expect(target.func(1, 2)).toBe(9);
     expect(callback).toHaveBeenCalledWith(1, 2);
   });
+
+  test('patched function is called after revoking', () => {
+    revoke();
+    target.func(1, 2);
+    expect(callback).not.toHaveBeenCalled();
+  })
 });
 
-describe('untouchable: undetectable', () => {
+describe('untouchable is undetectable', () => {
   let mock: jest.Mock;
   let target: { func: typeof mock };
   let callback: jest.Mock;

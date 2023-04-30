@@ -23,12 +23,18 @@ function untouchable<T extends Record<PropertyKey, any>>(
   });
 
   const prototype = Object.getPrototypeOf(from[key]);
+  const _toString = prototype.toString;
   prototype.toString = new Proxy(prototype.toString, {
     apply: (__, thisArg) => `function ${thisArg.name}() { [native code] }`,
   });
 
+  const _fromKey = from[key];
   from[key] = bind ? _.proxy.bind(bind) : _.proxy;
-  return _.revoke;
+  return () => {
+    _.revoke();
+    from[key] = _fromKey;
+    prototype.toString = _toString;
+  };
 }
 
 export default untouchable;
