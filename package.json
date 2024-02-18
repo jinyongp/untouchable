@@ -1,6 +1,6 @@
 {
   "name": "untouchable",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author": {
     "name": "Jinyong Park",
     "email": "dev.jinyongp@gmail.com"
@@ -21,7 +21,10 @@
     "dist"
   ],
   "readme": "README.md",
-  "repository": "github:jinyongp/untouchable",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jinyongp/untouchable.git"
+  },
   "bugs": {
     "url": "https://github.com/jinyongp/untouchable/issues",
     "email": "dev.jinyongp@gmail.com"
