@@ -1,4 +1,4 @@
-import untouchable from '../src';
+import { untouchable } from '../src';
 
 class Example {
   multiplier = 3;

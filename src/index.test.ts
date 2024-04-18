@@ -5,13 +5,13 @@ import { isProxy as isProxy1 } from 'is-proxy';
 /** @see https://nodejs.org/api/util.html#utiltypesisproxyvalue */
 import { isProxy as isProxy2 } from 'node:util/types';
 
-import untouchable from '.';
+import { Revoke, untouchable } from '.';
 
-describe('untouchable: functionality', () => {
+describe('untouchable has functionality', () => {
   let mock: jest.Mock;
   let target: { func: typeof mock };
   let callback: jest.Mock;
-  let revoke: ReturnType<typeof untouchable>;
+  let revoke: Revoke;
 
   beforeEach(() => {
     mock = jest.fn((a: number, b: number) => a + b);
@@ -46,7 +46,7 @@ describe('untouchable: functionality', () => {
     revoke();
     target.func(1, 2);
     expect(callback).not.toHaveBeenCalled();
-  })
+  });
 });
 
 describe('untouchable is undetectable', () => {
@@ -82,34 +82,102 @@ describe('untouchable is undetectable', () => {
     expect(isProxy2(target.func)).toBe(false);
   });
 
-  test('toString of the patched function displays the original function name and native code', () => {
-    const native = (name: string) => `function ${name}() { [native code] }`;
+  test('is not detected by strict equality check', () => {
+    const obj = { func: () => {} };
 
+    const before = obj.func;
+
+    const revoke = untouchable(obj, 'func', () => {});
+
+    // expect(obj.func).toEqual(before); // TODO: make this work
+
+    revoke();
+    expect(obj.func).toEqual(before);
+  });
+
+  test('toString of the patched function displays the original function name and native code', () => {
     const obj = {
-      foo: 'bar',
-      touchable(variable: string) {
+      fn1: (variable: string) => variable,
+      fn2: (variable: string): string => variable,
+      fn3: function (variable: string) {
         return variable;
       },
+      fn4: function (variable: string): string {
+        return variable;
+      },
+      fn5(variable: string) {
+        return variable;
+      },
+      fn6(variable: string): string {
+        return variable;
+      },
+      fn7: () => {},
     };
 
-    const proxy = Object.getPrototypeOf(Proxy);
-    expect(`${proxy}`).toBe(native(''));
+    obj.fn7.toString = () => 'CUSTOM';
 
-    const assertions = [
-      [obj.touchable, native('touchable')],
-      [Proxy, native('Proxy')],
-      [proxy, native('')],
+    const proxy = Object.getPrototypeOf(Proxy);
+    expect(`${proxy}`).toBe(`function () { [native code] }`);
+
+    const targets = [...Object.values(obj), Proxy, proxy, String.toString];
+
+    const cases = (target: string) => [
+      target,
+      target.toString,
+      target.toString(),
+      target.toString.toString,
+      target.toString.toString(),
+      target.toString().toString,
+      target.toString().toString(),
+
+      `${target}`,
+      `${target.toString}`,
+      `${target.toString()}`,
+      `${target.toString.toString}`,
+      `${target.toString.toString()}`,
+      `${target.toString().toString}`,
+      `${target.toString().toString()}`,
     ];
 
-    untouchable(obj, 'touchable', () => {});
-    expect(`${obj.touchable}`).not.toBe(native(''));
+    const original = new Map(targets.map((target) => [target, cases(target)]));
 
-    assertions.forEach(([target, expected]) => {
-      expect(`${target}`).toBe(expected);
-      expect(target.toString()).toBe(expected);
+    let key: keyof typeof obj;
+    for (key in obj) {
+      obj[key](key);
+      expect(callback).not.toHaveBeenCalled();
 
-      expect(`${target.toString}`).toBe(native('toString'));
-      expect(target.toString.toString()).toBe(native('toString'));
-    });
+      untouchable(obj, key, callback);
+
+      obj[key](key);
+      expect(callback).toHaveBeenCalledWith(key);
+      callback.mockReset();
+    }
+
+    const patched = new Map(targets.map((target) => [target, cases(target)]));
+
+    for (const [target, expected] of original) {
+      expect(patched.get(target)).toEqual(expected);
+    }
   });
 });
+
+try {
+  // @ts-expect-error literal type is not assignable to object
+  untouchable(1, 'abc', () => {});
+
+  // @ts-expect-error property value is not a function
+  untouchable({ a: 1 }, 'a', () => {});
+
+  // @ts-expect-error 'noop' is not a property of global
+  untouchable(global, 'noop', () => {});
+
+  // @ts-expect-error handler signature does not match the target function
+  untouchable(global, 'setTimeout', (a, b, c) => {});
+
+  untouchable(global, 'setTimeout', (handler, ms) => {
+    type cases = [
+      Expect<Equal<typeof handler, (args: void) => void>>,
+      Expect<Equal<typeof ms, number | undefined>>
+    ];
+  });
+} catch {}

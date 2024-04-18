@@ -19,7 +19,7 @@ $ yarn add untouchable
 Here's an example of how to use the untouchable library:
 
 ```ts
-import untouchable from 'untouchable';
+import { untouchable } from 'untouchable';
 
 class Example {
   multiplier = 3;
@@ -64,6 +64,11 @@ console.assert(example.func(3, 4) === 21); // Not patched
 
 - `Revoke function`: call this to restore the original function.
 
+## Limitations
+
+- only works with functions that are not getters or setters.
+- can be detected that function has been patched by strict equality check of the function reference.
+
 ## License
 
-MIT
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -2,44 +2,38 @@ export type Options = {
   bind?: object;
 };
 
-type Handler<T extends Record<PropertyKey, any>> = (
-  this: T,
-  ...args: Parameters<T[keyof T]>
-) => any;
+export type Handler<
+  T extends Record<PropertyKey, any>,
+  K extends Methods<T>,
+  P extends Parameters<T[K]> = Parameters<T[K]>
+> = (this: T, ...args: P) => any;
 
-function untouchable<T extends Record<PropertyKey, any>>(
-  from: T,
-  key: keyof T,
-  handler: Handler<T>,
-  options?: Options
-) {
+export type Revoke = () => void;
+
+export function untouchable<
+  T extends Record<PropertyKey, any>,
+  K extends Methods<T>
+>(from: T, key: K, handler: Handler<T, K>, options?: Options): Revoke {
   const { bind = false } = options ?? {};
 
-  const _ = Proxy.revocable(from[key], {
+  const { proxy, revoke } = Proxy.revocable(from[key], {
+    get(target, prop, receiver) {
+      return Reflect.get(target, prop, receiver);
+    },
     apply(target, thisArg: T, args) {
       Reflect.apply(handler, thisArg, args);
       return Reflect.apply(target, thisArg, args);
     },
   });
 
-  const prototype = Object.getPrototypeOf(from[key]);
-  const _toString = prototype.toString;
-  prototype.toString = new Proxy(prototype.toString, {
-    apply(__, thisArg) {
-      const string = _toString.apply(thisArg);
-      return string === 'function () { [native code] }'
-        ? `function ${thisArg.name}() { [native code] }`
-        : string;
-    },
-  });
-
-  const _fromKey = from[key];
-  from[key] = bind ? _.proxy.bind(bind) : _.proxy;
+  const func = from[key];
+  from[key] = bind ? proxy.bind(bind) : proxy;
   return () => {
-    _.revoke();
-    from[key] = _fromKey;
-    prototype.toString = _toString;
+    revoke();
+    from[key] = func;
   };
 }
 
-export default untouchable;
+type Methods<T> = {
+  [K in keyof T]: T[K] extends Function ? K : never;
+}[keyof T];
