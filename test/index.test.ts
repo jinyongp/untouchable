@@ -66,10 +66,22 @@ describe('untouchable is undetectable', () => {
     const proxy = new Proxy(() => {}, {});
     expect(isProxy1(proxy)).toBe(true);
 
-    untouchable(target, 'func', () => {}, { bind: target });
+    {
+      const revoke = untouchable(target, 'func', () => {}); // without bind
+      expect(isProxy1(target.func)).toBe(true); // detected as a Proxy
 
-    expect(isProxy1(target)).toBe(false);
-    expect(isProxy1(target.func)).toBe(false);
+      revoke();
+    }
+
+    {
+      const revoke = untouchable(target, 'func', () => {}, { bind: target });
+      expect(isProxy1(target.func)).toBe(false);
+
+      target.func(1, 2);
+      expect(callback).toHaveBeenCalledWith(1, 2);
+
+      revoke();
+    }
   });
 
   test('is not detected as a Proxy by node:util.types isProxy function', () => {
@@ -78,21 +90,35 @@ describe('untouchable is undetectable', () => {
 
     untouchable(target, 'func', () => {}, { bind: target });
 
-    expect(isProxy2(target)).toBe(false);
-    expect(isProxy2(target.func)).toBe(false);
+    {
+      const revoke = untouchable(target, 'func', () => {}); // without bind
+      expect(isProxy2(target.func)).toBe(true); // detected as a Proxy
+
+      revoke();
+    }
+
+    {
+      const revoke = untouchable(target, 'func', () => {}, { bind: target });
+      expect(isProxy2(target.func)).toBe(false);
+
+      target.func(1, 2);
+      expect(callback).toHaveBeenCalledWith(1, 2);
+
+      revoke();
+    }
   });
 
   test('is not detected by strict equality check', () => {
-    const obj = { func: () => {} };
+    const obj = { fn: () => {} };
 
-    const before = obj.func;
+    const before = obj.fn;
 
-    const revoke = untouchable(obj, 'func', () => {});
+    const revoke = untouchable(obj, 'fn', () => {});
 
-    // expect(obj.func).toEqual(before); // TODO: make this work
+    // expect(obj.fn).toEqual(before); // TODO: make this work
 
     revoke();
-    expect(obj.func).toEqual(before);
+    expect(obj.fn).toEqual(before);
   });
 
   test('toString of the patched function displays the original function name and native code', () => {
