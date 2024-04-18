@@ -1,17 +1,13 @@
 # untouchable
 
-`untouchable` is a library that allows you to create non-intrusive monkey patches for functions using JavaScript Proxy API. It provides a convenient way to intercept function calls and access the values of the arguments at the time of the call through a callback function.
+`untouchable` is a type-safe and lightweight library that allows you to create non-intrusive monkey patches for functions using [JavaScript Proxy API](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy). It provides a convenient way to intercept function calls and access the values of the arguments at the time of the call through a callback function.
 
 ## Installation
 
-Install the package using npm or yarn:
+Install the package using npm or other package managers:
 
 ```sh
 $ npm install untouchable
-```
-
-```sh
-$ yarn add untouchable
 ```
 
 ## Usage
@@ -29,7 +25,7 @@ class Example {
   }
 }
 
-function Patcher(this: Example, a: number, b: number) {
+function handler(this: Example, a: number, b: number) {
   console.log('Patched successfully!');
   console.assert(this instanceof Example);
   console.assert(this.multiplier === 3);
@@ -37,7 +33,7 @@ function Patcher(this: Example, a: number, b: number) {
   console.assert(b === 2);
 }
 
-const revoke = untouchable(Example.prototype, 'func', Patcher);
+const revoke = untouchable(Example.prototype, 'func', handler);
 
 const example = new Example();
 

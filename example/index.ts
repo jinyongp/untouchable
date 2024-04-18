@@ -8,7 +8,7 @@ class Example {
   }
 }
 
-function Patcher(this: Example, a: number, b: number) {
+function handler(this: Example, a: number, b: number) {
   console.log('Patched successfully!');
   console.assert(this instanceof Example);
   console.assert(this.multiplier === 3);
@@ -16,7 +16,7 @@ function Patcher(this: Example, a: number, b: number) {
   console.assert(b === 2);
 }
 
-const revoke = untouchable(Example.prototype, 'func', Patcher);
+const revoke = untouchable(Example.prototype, 'func', handler);
 
 const example = new Example();
 
