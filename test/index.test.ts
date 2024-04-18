@@ -5,7 +5,7 @@ import { isProxy as isProxy1 } from 'is-proxy';
 /** @see https://nodejs.org/api/util.html#utiltypesisproxyvalue */
 import { isProxy as isProxy2 } from 'node:util/types';
 
-import { Revoke, untouchable } from '.';
+import { Revoke, untouchable } from '../src';
 
 describe('untouchable has functionality', () => {
   let mock: jest.Mock;
