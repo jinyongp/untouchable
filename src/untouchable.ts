@@ -100,6 +100,8 @@ export function untouchable<T extends Record<PropertyKey, any>, K extends Method
 ): Revoke {
   const bind = options?.bind
   const previous = object[key]
+  const previousToString = previous.toString
+  let patchedToString: any
 
   const { proxy, revoke: revokeProxy } = Proxy.revocable(previous, {
     apply(_target, thisArg: T, args) {
@@ -113,19 +115,22 @@ export function untouchable<T extends Record<PropertyKey, any>, K extends Method
     },
     get(target, prop) {
       if (prop === 'toString') {
-        return createToStringProxy(previous.toString, previous)
+        return patchedToString || createToStringProxy(previousToString, previous)
       }
       return Reflect.get(target, prop)
     },
+    set(target, prop, value) {
+      if (prop === 'toString') {
+        patchedToString = value
+        return true
+      }
+      return Reflect.set(target, prop, value)
+    },
   })
 
-  if (bind) {
-    object[key] = proxy.bind(bind)
-    object[key].toString = createToStringProxy(previous.toString, previous)
-  }
-  else {
-    object[key] = proxy
-  }
+  const patched = bind ? proxy.bind(bind) : proxy
+  patched.toString = createToStringProxy(previousToString, previous)
+  object[key] = patched
 
   return () => {
     revokeProxy()
