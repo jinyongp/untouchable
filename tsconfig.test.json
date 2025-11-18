@@ -6,6 +6,7 @@
       "@types/node",
       "vitest/globals"
     ],
+    "tsBuildInfoFile": "./.cache/tsconfig.test.tsbuildinfo"
   },
   "include": [
     "src",

@@ -45,6 +45,7 @@
     "lint": "eslint .",
     "test": "npm-run-all -p test:*",
     "test:unit": "vitest run",
+    "test:type": "tsc --build --noEmit",
     "test:example": "jiti example/index.ts",
     "prepublishOnly": "npm run build"
   },
