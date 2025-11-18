@@ -814,3 +814,216 @@ describe('untouchable is undetectable', () => {
     expect(toString.name).toBe('toString')
   })
 })
+
+describe('untouchable with arbitrary bind values', () => {
+  test('works with null bind value', () => {
+    const obj = { fn: (x: number) => x * 2 }
+
+    untouchable(obj, 'fn', () => { }, { bind: null as any })
+
+    expect(obj.fn(5)).toBe(10)
+  })
+
+  test('works with undefined bind value', () => {
+    const obj = { fn: (x: number) => x * 2 }
+
+    untouchable(obj, 'fn', () => { }, { bind: undefined })
+
+    expect(obj.fn(5)).toBe(10)
+  })
+
+  test('works with primitive bind values', () => {
+    const obj = { fn: (x: number) => x * 2 }
+
+    // Number
+    untouchable(obj, 'fn', () => { }, { bind: 42 as any })
+    expect(obj.fn(5)).toBe(10)
+  })
+
+  test('works with string bind value', () => {
+    const obj = { fn: (x: number) => x * 2 }
+
+    untouchable(obj, 'fn', () => { }, { bind: 'test' as any })
+    expect(obj.fn(5)).toBe(10)
+  })
+
+  test('works with boolean bind value', () => {
+    const obj = { fn: (x: number) => x * 2 }
+
+    untouchable(obj, 'fn', () => { }, { bind: true as any })
+    expect(obj.fn(5)).toBe(10)
+  })
+
+  test('works with array bind value', () => {
+    const obj = { fn: (x: number) => x * 2 }
+
+    untouchable(obj, 'fn', () => { }, { bind: [1, 2, 3] as any })
+    expect(obj.fn(5)).toBe(10)
+  })
+
+  test('listener mode with null bind preserves original this context', () => {
+    const obj = {
+      multiplier: 3,
+      fn: function (x: number) {
+        return x * this.multiplier
+      },
+    }
+
+    // In listener mode, bind only affects the listener, not the original function
+    untouchable(obj, 'fn', () => { }, { bind: null as any })
+
+    // Original function still uses obj as this
+    expect(obj.fn(5)).toBe(15) // 5 * 3
+  })
+
+  test('original function with this context works with valid bind', () => {
+    const obj = {
+      multiplier: 3,
+      fn: function (x: number) {
+        return x * this.multiplier
+      },
+    }
+    const customContext = { multiplier: 5 }
+
+    untouchable(obj, 'fn', () => { }, { bind: customContext })
+
+    // Should use customContext.multiplier
+    expect(obj.fn(2)).toBe(10) // 2 * 5
+  })
+
+  test('replace mode with null bind preserves original behavior', () => {
+    const obj = { fn: (x: number) => x + 1 }
+
+    untouchable(obj, 'fn', (original, x) => {
+      return original(x) * 2
+    }, { replace: true, bind: null as any })
+
+    expect(obj.fn(5)).toBe(12) // (5+1)*2
+  })
+
+  test('replace mode with primitive bind value', () => {
+    const obj = { fn: (x: number) => x + 1 }
+
+    untouchable(obj, 'fn', (original, x) => {
+      return original(x) * 2
+    }, { replace: true, bind: 123 as any })
+
+    expect(obj.fn(5)).toBe(12) // (5+1)*2
+  })
+
+  test('replace mode with this-dependent function and null bind uses original context', () => {
+    const obj = {
+      multiplier: 10,
+      fn: function (x: number) {
+        return x * this.multiplier
+      },
+    }
+
+    untouchable(obj, 'fn', (original, x) => {
+      return original(x) + 1
+    }, { replace: true, bind: null as any })
+
+    // null is falsy, so bind falls back to thisArg (obj)
+    // 5 * 10 + 1 = 51
+    expect(obj.fn(5)).toBe(51)
+  })
+
+  test('replace mode with this-dependent function and empty object bind', () => {
+    const obj = {
+      multiplier: 10,
+      fn: function (x: number) {
+        return x * this.multiplier
+      },
+    }
+
+    untouchable(obj, 'fn', (original, x) => {
+      return original(x) + 1
+    }, { replace: true, bind: {} as any })
+
+    // Empty object doesn't have multiplier, so this.multiplier is undefined
+    expect(obj.fn(5)).toBeNaN() // 5 * undefined + 1 = NaN
+  })
+
+  test('arrow function ignores bind context', () => {
+    const obj = { fn: (x: number) => x * 2 }
+    const customContext = { value: 100 }
+
+    // Arrow functions ignore bind, so this should work fine
+    untouchable(obj, 'fn', () => { }, { bind: customContext })
+
+    expect(obj.fn(5)).toBe(10)
+  })
+
+  test('handler receives correct arguments with arbitrary bind', () => {
+    const obj = { fn: (a: number, b: number) => a + b }
+    const handler = vi.fn()
+
+    untouchable(obj, 'fn', handler, { bind: 'arbitrary' as any })
+
+    obj.fn(3, 7)
+
+    expect(handler).toHaveBeenCalledWith(3, 7)
+    expect(handler).toHaveBeenCalledOnce()
+  })
+
+  test('replacer receives correct arguments with arbitrary bind', () => {
+    const obj = { fn: (a: number, b: number) => a + b }
+    const replacer = vi.fn((original, a, b) => original(a, b) * 2)
+
+    untouchable(obj, 'fn', replacer, { replace: true, bind: Symbol('test') as any })
+
+    const result = obj.fn(3, 7)
+
+    expect(result).toBe(20) // (3+7)*2
+    expect(replacer).toHaveBeenCalledWith(expect.any(Function), 3, 7)
+  })
+
+  test('falsy bind values use original this context', () => {
+    const obj = {
+      multiplier: 5,
+      fn: function (x: number) {
+        return x * this.multiplier
+      },
+    }
+
+    // Test with various falsy values
+    const falsyValues = [null, undefined, 0, false, '']
+
+    for (const falsyValue of falsyValues) {
+      const testObj = { ...obj }
+      untouchable(testObj, 'fn', (original, x) => original(x), { replace: true, bind: falsyValue as any })
+
+      // All falsy bind values should use original context (testObj)
+      expect(testObj.fn(3)).toBe(15) // 3 * 5
+    }
+  })
+
+  test('truthy non-object bind values can cause errors with this-dependent functions', () => {
+    const obj = {
+      multiplier: 5,
+      fn: function (x: number) {
+        return x * this.multiplier
+      },
+    }
+
+    // Bind to a number (truthy but no multiplier property)
+    untouchable(obj, 'fn', (original, x) => original(x), { replace: true, bind: 123 as any })
+
+    // Number(123).multiplier is undefined, so result is NaN
+    expect(obj.fn(3)).toBeNaN()
+  })
+
+  test('truthy string bind value causes NaN with this-dependent functions', () => {
+    const obj = {
+      value: 10,
+      fn: function (x: number) {
+        return x + this.value
+      },
+    }
+
+    untouchable(obj, 'fn', (original, x) => original(x), { replace: true, bind: 'test' as any })
+
+    // String('test').value is undefined
+    expect(obj.fn(5)).toBeNaN()
+  })
+})
