@@ -1,4 +1,13 @@
 {
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "cSpell.words": ["iife", "monkeypatch", "outdir", "outfile", "softprops"]
+  "cSpell.numSuggestions": 0,
+  "cSpell.customDictionaries": {
+    "words": {
+      "name": "Workspace",
+      "path": "${workspaceRoot}/.vscode/words.txt",
+      "addWords": true,
+      "scope": "workspace"
+    },
+    "custom": true,
+    "internal-terms": false
+  },
 }
