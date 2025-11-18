@@ -2,45 +2,15 @@ name: Publish Package
 
 on:
   push:
-    tags:
-      - "*"
+    branches:
+      - main
+    paths:
+      - "./src/**"
 
   workflow_dispatch:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: package.json
-          cache: "pnpm"
-
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm test
-
-  release:
-    needs: test
-    if: startsWith(github.ref, 'refs/tags/')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v5
-      - uses: softprops/action-gh-release@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          body: |
-            Release ${{ github.ref }}
-            sha: ${{ github.sha }}
-
   publish-npm:
-    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -53,29 +23,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - run: pnpm publish
+      - run: pnpm test
+      - run: pnpm publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  publish-gpr:
-    needs: test
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: package.json
-          registry-url: https://npm.pkg.github.com
-          scope: "@${{ github.repository_owner }}"
-          cache: "pnpm"
-
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-      - run: echo "registry=https://npm.pkg.github.com/${{ github.repository_owner }}" > .npmrc
-      - run: pnpm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GPR_TOKEN }}
