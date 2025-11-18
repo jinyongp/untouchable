@@ -36,8 +36,7 @@
   "keywords": [
     "proxy",
     "monkeypatch",
-    "untouchable",
-    "undetectable"
+    "untouchable"
   ],
   "license": "MIT",
   "scripts": {
@@ -54,6 +53,7 @@
     "@stylistic/eslint-plugin": "^5.6.0",
     "@types/node": "^22.19.1",
     "@vitest/coverage-istanbul": "4.0.10",
+    "consola": "^3.4.2",
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
     "is-proxy": "^1.0.6",

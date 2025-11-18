@@ -74,26 +74,21 @@ Modify function behavior by wrapping the original.
 const cache = new Map()
 
 const api = {
-  fetchData: async (id: number) => {
+  async fetchData(id: number) {
     const response = await fetch(`/api/data/${id}`)
     return response.json()
   },
 }
 
 // Add caching
-const revoke = untouchable(
-  api,
-  'fetchData',
-  async (original, id) => {
+const revoke = untouchable(api, 'fetchData', async (original, id) => {
     if (cache.has(id)) {
       return cache.get(id)
     }
     const data = await original(id)
     cache.set(id, data)
     return data
-  },
-  { replace: true },
-)
+  }, { replace: true })
 
 await api.fetchData(1) // fetch from server
 await api.fetchData(1) // return from cache
@@ -110,37 +105,22 @@ const logger = {
   log: (message: string) => console.log(message),
 }
 
-// Add timestamp
-const revoke1 = untouchable(
-  logger,
-  'log',
-  (original, message) => {
-    const timestamp = new Date().toISOString()
-    return original(`[${timestamp}] ${message}`)
-  },
-  { replace: true },
-)
+const revoke1 = untouchable(logger, 'log', (original, message) => {
+  const timestamp = new Date().toISOString()
+  return original(`[${timestamp}] ${message}`)
+}, { replace: true })
 
-// Add log level
-const revoke2 = untouchable(
-  logger,
-  'log',
-  (original, message) => {
-    return original(`[INFO] ${message}`)
-  },
-  { replace: true },
-)
+const revoke2 = untouchable(logger, 'log', (original, message) => {
+  return original(`[INFO] ${message}`)
+}, { replace: true })
 
-logger.log('Hello')
-// Outputs: [2025-11-18T12:34:56.789Z] [INFO] Hello
+logger.log('Hello') // [2025-11-18T12:34:56.789Z] [INFO] Hello
 
 revoke2() // remove log level
-logger.log('Hello')
-// Outputs: [2025-11-18T12:34:56.789Z] Hello
+logger.log('Hello') // [2025-11-18T12:34:56.789Z] Hello
 
 revoke1() // remove timestamp
-logger.log('Hello')
-// Outputs: Hello
+logger.log('Hello') // Hello
 ```
 
 ### Custom Context Binding
@@ -157,15 +137,10 @@ const counter = {
 
 const customContext = { count: 100 }
 
-untouchable(
-  counter,
-  'increment',
-  function (original) {
+untouchable(counter, 'increment', function (original) {
     // this refers to customContext
     return original()
-  },
-  { replace: true, bind: customContext },
-)
+  }, { replace: true, bind: customContext })
 
 counter.increment() // Returns: 101 (uses customContext.count)
 ```
