@@ -1,5 +1,5 @@
 {
-  "name": "@jinyongp/untouchable",
+  "name": "untouchable",
   "version": "0.4.0",
   "type": "module",
   "main": "dist/index.mjs",
@@ -45,8 +45,7 @@
     "test": "npm-run-all -p test:*",
     "test:unit": "vitest run",
     "test:type": "tsc --build --noEmit",
-    "test:example": "jiti example/index.ts",
-    "prepublishOnly": "npm run build"
+    "test:example": "jiti example/index.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
@@ -59,7 +58,6 @@
     "is-proxy": "^1.0.6",
     "jiti": "^2.6.1",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.8.7",
     "tsdown": "^0.16.5",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.47.0",
@@ -69,5 +67,12 @@
   "engines": {
     "node": ">=20"
   },
-  "packageManager": "pnpm@10.22.0+sha512.bf049efe995b28f527fd2b41ae0474ce29186f7edcb3bf545087bd61fbbebb2bf75362d1307fda09c2d288e1e499787ac12d4fcb617a974718a6051f2eee741c"
+  "packageManager": "pnpm@10.22.0+sha512.bf049efe995b28f527fd2b41ae0474ce29186f7edcb3bf545087bd61fbbebb2bf75362d1307fda09c2d288e1e499787ac12d4fcb617a974718a6051f2eee741c",
+  "pnpm": {
+    "updateConfig": {
+      "ignoreDependencies": [
+        "@types/node"
+      ]
+    }
+  }
 }
