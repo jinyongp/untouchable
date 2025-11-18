@@ -1,8 +1,10 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
+    "noUnusedLocals": false,
     "types": [
-      "jest"
+      "@types/node",
+      "vitest/globals"
     ],
   },
   "include": [
