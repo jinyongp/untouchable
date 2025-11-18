@@ -1,28 +1,25 @@
 {
   "name": "@jinyongp/untouchable",
   "version": "0.4.0",
+  "type": "module",
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.mts"
+    }
+  },
+  "readme": "README.md",
+  "files": [
+    "dist"
+  ],
   "author": {
     "name": "Jinyong Park",
     "email": "dev.jinyongp@gmail.com"
   },
-  "keywords": [
-    "proxy",
-    "monkeypatch",
-    "untouchable",
-    "undetectable"
-  ],
-  "type": "module",
-  "main": "dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    "import": "./dist/index.mjs",
-    "require": "./dist/index.cjs",
-    "types": "./dist/index.d.ts"
-  },
-  "files": [
-    "dist"
-  ],
-  "readme": "README.md",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jinyongp/untouchable.git"
@@ -31,29 +28,30 @@
     "url": "https://github.com/jinyongp/untouchable/issues",
     "email": "dev.jinyongp@gmail.com"
   },
+  "keywords": [
+    "proxy",
+    "monkeypatch",
+    "untouchable",
+    "undetectable"
+  ],
   "license": "MIT",
   "scripts": {
+    "build": "tsdown",
     "test": "npm-run-all -p test:*",
     "test:unit": "jest",
     "test:example": "ts-node example/index.ts",
-    "prepublishOnly": "npm run build",
-    "build": "rimraf dist && npm-run-all -p build:*",
-    "build:esm": "esbuild src/index.ts --outfile=dist/index.mjs --format=esm --target=es6 --minify",
-    "build:cjs": "esbuild src/index.ts --outfile=dist/index.cjs --format=cjs --target=es6 --minify",
-    "build:iife": "esbuild src/index.ts --outfile=dist/index.js --format=iife --target=es6 --global-name=untouchable --minify",
-    "build:types": "tsc src/index.ts --declaration --emitDeclarationOnly --outDir dist"
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",
-    "esbuild": "^0.17.15",
     "is-proxy": "^1.0.6",
     "jest": "^29.5.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.8.7",
-    "rimraf": "^4.4.1",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.0.3"
+    "tsdown": "^0.16.5",
+    "typescript": "^5.9.3"
   },
   "sideEffects": false,
   "engines": {

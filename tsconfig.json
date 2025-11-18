@@ -1,19 +1,11 @@
 {
-  "compilerOptions": {
-    "allowJs": true,
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "target": "ESNext",
-    "strict": true,
-    "outDir": "dist",
-    "sourceMap": true,
-    "lib": ["DOM", "ESNext"],
-    "types": ["jest"],
-    "noImplicitAny": true,
-    "esModuleInterop": true,
-    "preserveValueImports": false,
-    "forceConsistentCasingInFileNames": true
-  },
-  "include": ["**/*.ts", "**/*.test.ts"],
-  "exclude": ["node_modules", "dist"]
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.build.json"
+    },
+    {
+      "path": "./tsconfig.test.json"
+    }
+  ]
 }

@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    /// Languages and Environment
+    "target": "ES2022",
+    /// Modules
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    /// Interop Constraints
+    "esModuleInterop": true,
+    "verbatimModuleSyntax": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    /// Type Checking
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    /// Emit
+    "declaration": true,
+    "declarationMap": true,
+    "newLine": "lf",
+    "sourceMap": true,
+    "preserveConstEnums": true,
+    "removeComments": false,
+    /// Completeness
+    "skipLibCheck": true,
+    /// Output Formatting
+    "noErrorTruncation": true,
+  }
+}
