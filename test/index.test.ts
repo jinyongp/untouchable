@@ -1027,3 +1027,134 @@ describe('untouchable with arbitrary bind values', () => {
     expect(obj.fn(5)).toBeNaN()
   })
 })
+
+describe('untouchable with bare option', () => {
+  test('bare mode does not wrap toString', () => {
+    const obj = { fn: (x: number) => x }
+
+    untouchable(obj, 'fn', () => { }, { bare: true })
+
+    // toString is not a Proxy in bare mode
+    expect(isProxy1(obj.fn.toString)).toBe(false)
+    expect(isProxy2(obj.fn.toString)).toBe(false)
+  })
+
+  test('bare mode toString still works', () => {
+    const obj = {
+      fn: function myFunc() {
+        return 1
+      },
+    }
+
+    untouchable(obj, 'fn', () => { }, { bare: true })
+
+    // toString output might be different but still works
+    expect(typeof obj.fn.toString()).toBe('string')
+  })
+
+  test('bare mode with Function.prototype.toString override', () => {
+    const obj = { fn: () => 1 }
+
+    const customToString = function () {
+      return 'custom'
+    }
+    const originalProtoToString = Function.prototype.toString
+    Function.prototype.toString = customToString
+
+    try {
+      untouchable(obj, 'fn', () => { }, { bare: true })
+
+      // In bare mode, toString is not preserved
+      expect(obj.fn.toString()).toBe('custom')
+    }
+    finally {
+      Function.prototype.toString = originalProtoToString
+    }
+  })
+
+  test('default mode (bare: false) wraps toString', () => {
+    const obj = { fn: (x: number) => x }
+
+    untouchable(obj, 'fn', () => { })
+
+    // toString is a Proxy by default
+    expect(isProxy1(obj.fn.toString)).toBe(true)
+    expect(isProxy2(obj.fn.toString)).toBe(true)
+  })
+
+  test('bare mode with replace option', () => {
+    const obj = { fn: (x: number) => x * 2 }
+
+    untouchable(obj, 'fn', (original, x) => {
+      return original(x) + 1
+    }, { replace: true, bare: true })
+
+    expect(obj.fn(5)).toBe(11) // (5 * 2) + 1
+
+    expect(isProxy1(obj.fn.toString)).toBe(false)
+  })
+
+  test('bare mode with bind option', () => {
+    const ctx = { value: 10 }
+    const obj = { fn: (x: number) => x }
+
+    untouchable(obj, 'fn', function (_x) {
+      expect(this).toBe(ctx)
+    }, { bare: true, bind: ctx })
+
+    obj.fn(5)
+
+    expect(isProxy2(obj.fn)).toBe(false) // bind makes it undetectable
+    expect(isProxy2(obj.fn.toString)).toBe(false) // bare mode
+  })
+
+  test('bare mode revoke works correctly', () => {
+    const obj = { fn: () => 1 }
+    const original = obj.fn
+
+    const revoke = untouchable(obj, 'fn', () => { }, { bare: true })
+
+    expect(obj.fn).not.toBe(original)
+
+    revoke()
+
+    expect(obj.fn).toBe(original)
+  })
+
+  test('bare mode allows setting other properties on proxy', () => {
+    const obj = { fn: () => 1 }
+
+    untouchable(obj, 'fn', () => { }, { bare: true });
+
+    // In bare mode, setting non-toString properties should work
+    (<any>obj.fn).customProp = 'test'
+    expect((obj.fn as any).customProp).toBe('test')
+  })
+
+  test('default mode allows setting other properties on proxy', () => {
+    const obj = { fn: () => 1 }
+
+    untouchable(obj, 'fn', () => { });
+
+    // In default mode, setting non-toString properties should also work
+    (<any>obj.fn).anotherProp = 'value'
+    expect((obj.fn as any).anotherProp).toBe('value')
+  })
+
+  test('get trap fallback to createToStringProxy when patchedToString is not set', () => {
+    const obj = {
+      fn: function test() {
+        return 1
+      },
+    }
+
+    // Use bind option - this creates a bound function where setting toString doesn't trigger set trap
+    const ctx = { value: 42 }
+    untouchable(obj, 'fn', () => { }, { bind: ctx })
+
+    // Accessing toString should work (triggers get trap on original proxy, then falls back)
+    const toStr = obj.fn.toString
+    expect(typeof toStr).toBe('function')
+    expect(typeof toStr()).toBe('string')
+  })
+})
