@@ -6,9 +6,10 @@
     "email": "dev.jinyongp@gmail.com"
   },
   "keywords": [
+    "proxy",
     "monkeypatch",
-    "undetectable",
-    "proxy"
+    "untouchable",
+    "undetectable"
   ],
   "type": "module",
   "main": "dist/index.js",
@@ -54,6 +55,7 @@
     "ts-node": "^10.9.1",
     "typescript": "^5.0.3"
   },
+  "sideEffects": false,
   "engines": {
     "node": "22"
   },
