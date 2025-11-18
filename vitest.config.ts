@@ -6,7 +6,7 @@ export default defineConfig({
     include: ['**/*.{test,test-d}.ts'],
     coverage: {
       enabled: true,
-      provider: 'istanbul'
+      provider: 'istanbul',
     },
   },
 })

@@ -5,7 +5,7 @@ export default defineConfig({
     'src/index.ts',
   ],
 
-  tsconfig: "./tsconfig.json",
+  tsconfig: './tsconfig.json',
 
   dts: {
     build: true,

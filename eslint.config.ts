@@ -1,4 +1,4 @@
-import { defineConfig } from 'eslint/config'
+import { defineConfig, globalIgnores } from 'eslint/config'
 
 import tseslint from 'typescript-eslint'
 import globals from 'globals'
@@ -6,6 +6,11 @@ import js from '@eslint/js'
 import stylistic from '@stylistic/eslint-plugin'
 
 export default defineConfig([
+  globalIgnores([
+    'dist',
+    'coverage',
+    'node_modules',
+  ], 'ignores'),
   {
     files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],
     plugins: { js },
