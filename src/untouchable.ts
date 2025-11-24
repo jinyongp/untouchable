@@ -1,4 +1,4 @@
-import type { Listener, Replacer, UntouchableOptions, Revoke, Methods } from './types'
+import type { Listener, Replacer, Options, Revoke, Methods } from './types'
 import { createToStringProxy } from './utils'
 
 /**
@@ -24,7 +24,7 @@ export function untouchable<T extends Record<PropertyKey, any>, K extends Method
   object: T,
   key: K,
   listener: Listener<T, K>,
-  options?: UntouchableOptions & { replace?: false },
+  options?: Options & { replace?: false },
 ): Revoke
 
 /**
@@ -89,14 +89,14 @@ export function untouchable<T extends Record<PropertyKey, any>, K extends Method
   object: T,
   key: K,
   replacer: Replacer<T, K>,
-  options?: UntouchableOptions & { replace: true },
+  options?: Options & { replace: true },
 ): Revoke
 
 export function untouchable<T extends Record<PropertyKey, any>, K extends Methods<T>>(
   object: T,
   key: K,
   func: Listener<T, K> | Replacer<T, K>,
-  options?: UntouchableOptions & { replace?: boolean },
+  options?: Options & { replace?: boolean },
 ): Revoke {
   const bind = options?.bind
   const bare = options?.bare

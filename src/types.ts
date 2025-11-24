@@ -1,5 +1,5 @@
 /**
- * A handler function that is called before the original function executes.
+ * A listener function that is called before the original function executes.
  * Does not receive the original function and cannot modify the return value.
  * The original function will still execute after the listener.
  *
@@ -20,8 +20,7 @@
 export type Listener<
   T extends Record<PropertyKey, any>,
   K extends Methods<T>,
-  P extends Parameters<T[K]> = Parameters<T[K]>,
-> = (this: T, ...args: P) => void | undefined
+> = (this: T, ...args: Parameters<T[K]>) => void | undefined
 
 /**
  * A replacer function that wraps the original function and can modify its behavior.
@@ -46,14 +45,12 @@ export type Listener<
 export type Replacer<
   T extends Record<PropertyKey, any>,
   K extends Methods<T>,
-  P extends Parameters<T[K]> = Parameters<T[K]>,
-  R extends ReturnType<T[K]> = ReturnType<T[K]>,
-> = (this: T, original: T[K], ...args: P) => R
+> = (this: T, original: T[K], ...args: Parameters<T[K]>) => ReturnType<T[K]>
 
 /**
  * Options for configuring the untouchable patch behavior.
  */
-export type UntouchableOptions = {
+export type Options = {
   /**
    * Bind the handler/replacer to a specific context object.
    *
@@ -134,17 +131,10 @@ export type UntouchableOptions = {
  */
 export type Revoke = () => void
 
-/**
- * A generic function type that accepts any arguments and returns any value.
- * @internal
- */
+/** @internal */
 export type AnyFunction = (...args: any[]) => any
 
-/**
- * Extracts only the method keys from an object type.
- * Filters out properties that are not functions.
- * @internal
- */
+/** @internal */
 export type Methods<T> = {
   [K in keyof T]: T[K] extends AnyFunction ? K : never
 }[keyof T]

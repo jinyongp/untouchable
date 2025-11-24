@@ -3,6 +3,6 @@ export { untouchable } from './untouchable'
 export type {
   Listener,
   Replacer,
-  UntouchableOptions,
+  Options,
   Revoke,
 } from './types'
