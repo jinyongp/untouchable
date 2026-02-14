@@ -391,7 +391,7 @@ describe('untouchable with bind option', () => {
     const customContext = {}
     const originalToString = obj.fn.toString()
 
-    untouchable(obj, 'fn', function () { }, { bind: customContext })
+    untouchable(obj, 'fn', function () { }, { bind: customContext, cloak: true })
 
     expect(obj.fn.toString()).toBe(originalToString)
     expect(obj.fn.toString()).not.toContain('bound')
@@ -404,7 +404,7 @@ describe('untouchable with bind option', () => {
     const originalToString = obj.fn.toString()
     const originalToStringToString = obj.fn.toString.toString()
 
-    untouchable(obj, 'fn', function () { }, { bind: customContext })
+    untouchable(obj, 'fn', function () { }, { bind: customContext, cloak: true })
 
     expect(obj.fn.toString()).toBe(originalToString)
     expect(obj.fn.toString.toString()).toBe(originalToStringToString)
@@ -592,15 +592,15 @@ describe('untouchable is undetectable', () => {
     expect(isProxy2(obj.fn)).toBe(false)
   })
 
-  test('toString is Proxy without bind option', () => {
+  test('toString is not Proxy by default without bind option', () => {
     const obj = { fn: (x: number) => x }
 
     const revoke = untouchable(obj, 'fn', () => { })
 
-    // toString is a Proxy (from get trap)
+    // toString is untouched by default
     const toString = obj.fn.toString
-    expect(isProxy1(toString)).toBe(true)
-    expect(isProxy2(toString)).toBe(true)
+    expect(isProxy1(toString)).toBe(false)
+    expect(isProxy2(toString)).toBe(false)
 
     revoke()
   })
@@ -610,10 +610,10 @@ describe('untouchable is undetectable', () => {
 
     const revoke = untouchable(obj, 'fn', () => { })
 
-    // Before revoke: toString is Proxy
+    // Before revoke: toString is not Proxy by default
     const toStringBefore = obj.fn.toString
-    expect(isProxy1(toStringBefore)).toBe(true)
-    expect(isProxy2(toStringBefore)).toBe(true)
+    expect(isProxy1(toStringBefore)).toBe(false)
+    expect(isProxy2(toStringBefore)).toBe(false)
 
     revoke()
 
@@ -633,8 +633,8 @@ describe('untouchable is undetectable', () => {
     // During patch
     expect(isProxy1(obj.fn)).toBe(true)
     expect(isProxy2(obj.fn)).toBe(true)
-    expect(isProxy1(obj.fn.toString)).toBe(true)
-    expect(isProxy2(obj.fn.toString)).toBe(true)
+    expect(isProxy1(obj.fn.toString)).toBe(false)
+    expect(isProxy2(obj.fn.toString)).toBe(false)
 
     revoke()
 
@@ -653,7 +653,7 @@ describe('untouchable is undetectable', () => {
     const originalToString = obj.fn1.toString()
 
     const localHandler = vi.fn()
-    untouchable(obj, 'fn1', localHandler)
+    untouchable(obj, 'fn1', localHandler, { cloak: true })
 
     const patchedToString = obj.fn1.toString()
 
@@ -668,7 +668,7 @@ describe('untouchable is undetectable', () => {
     const originalToStringToString = obj.fn.toString.toString()
     const originalToStringToStringToString = obj.fn.toString.toString.toString()
 
-    untouchable(obj, 'fn', () => { })
+    untouchable(obj, 'fn', () => { }, { cloak: true })
 
     // All levels preserved
     expect(obj.fn.toString()).toBe(originalToString)
@@ -684,7 +684,7 @@ describe('untouchable is undetectable', () => {
   test('toString chain works infinitely deep', () => {
     const obj = { fn: (x: number) => x }
 
-    untouchable(obj, 'fn', () => { })
+    untouchable(obj, 'fn', () => { }, { cloak: true })
 
     // Navigate 10 levels deep
     let current: any = obj.fn
@@ -707,7 +707,7 @@ describe('untouchable is undetectable', () => {
     try {
       const originalResult = obj.fn.toString()
 
-      untouchable(obj, 'fn', () => { })
+      untouchable(obj, 'fn', () => { }, { cloak: true })
 
       const patchedResult = obj.fn.toString()
 
@@ -724,7 +724,7 @@ describe('untouchable is undetectable', () => {
 
     const originalToString = obj.fn.toString()
 
-    const revoke = untouchable(obj, 'fn', () => { })
+    const revoke = untouchable(obj, 'fn', () => { }, { cloak: true })
 
     expect(obj.fn.toString()).toBe(originalToString)
     expect(obj.fn.toString.length).toBe(0)
@@ -746,7 +746,7 @@ describe('untouchable is undetectable', () => {
 
     const originalToString = obj.fn.toString()
 
-    untouchable(obj, 'fn', () => { }, { bind: bindContext })
+    untouchable(obj, 'fn', () => { }, { bind: bindContext, cloak: true })
 
     expect(obj.fn.toString()).toBe(originalToString)
     expect(obj.fn.toString.toString).toBeDefined()
@@ -760,7 +760,7 @@ describe('untouchable is undetectable', () => {
       },
     }
 
-    untouchable(obj, 'fn', () => { })
+    untouchable(obj, 'fn', () => { }, { cloak: true })
 
     // Access name at different levels of toString chain
     expect(obj.fn.name).toBe('myFunc')
@@ -774,16 +774,16 @@ describe('untouchable is undetectable', () => {
     expect(obj.fn.toString.length).toBe(0)
   })
 
-  test('toString itself is not detected as Proxy without bind', () => {
+  test('toString is detected as Proxy when cloak is enabled without bind', () => {
     const obj = { fn: (x: number) => x }
 
-    untouchable(obj, 'fn', () => { })
+    untouchable(obj, 'fn', () => { }, { cloak: true })
 
     // Without bind option, proxy is detectable on the function
     expect(isProxy1(obj.fn)).toBe(true)
     expect(isProxy2(obj.fn)).toBe(true)
 
-    // But toString should also be a Proxy (created by get trap)
+    // toString is also a Proxy when cloak is enabled
     const toString = obj.fn.toString
     expect(isProxy1(toString)).toBe(true)
     expect(isProxy2(toString)).toBe(true)
@@ -793,7 +793,7 @@ describe('untouchable is undetectable', () => {
     const obj = { fn: (x: number) => x }
     const bindContext = {}
 
-    untouchable(obj, 'fn', () => { }, { bind: bindContext })
+    untouchable(obj, 'fn', () => { }, { bind: bindContext, cloak: true })
 
     // With bind option, function is not detectable
     expect(isProxy1(obj.fn)).toBe(false)
@@ -1028,31 +1028,31 @@ describe('untouchable with arbitrary bind values', () => {
   })
 })
 
-describe('untouchable with bare option', () => {
-  test('bare mode does not wrap toString', () => {
+describe('untouchable with cloak option', () => {
+  test('default mode does not wrap toString', () => {
     const obj = { fn: (x: number) => x }
 
-    untouchable(obj, 'fn', () => { }, { bare: true })
+    untouchable(obj, 'fn', () => { })
 
-    // toString is not a Proxy in bare mode
+    // toString is not a Proxy in default mode
     expect(isProxy1(obj.fn.toString)).toBe(false)
     expect(isProxy2(obj.fn.toString)).toBe(false)
   })
 
-  test('bare mode toString still works', () => {
+  test('default mode toString still works', () => {
     const obj = {
       fn: function myFunc() {
         return 1
       },
     }
 
-    untouchable(obj, 'fn', () => { }, { bare: true })
+    untouchable(obj, 'fn', () => { })
 
     // toString output might be different but still works
     expect(typeof obj.fn.toString()).toBe('string')
   })
 
-  test('bare mode with Function.prototype.toString override', () => {
+  test('default mode with Function.prototype.toString override', () => {
     const obj = { fn: () => 1 }
 
     const customToString = function () {
@@ -1062,9 +1062,9 @@ describe('untouchable with bare option', () => {
     Function.prototype.toString = customToString
 
     try {
-      untouchable(obj, 'fn', () => { }, { bare: true })
+      untouchable(obj, 'fn', () => { })
 
-      // In bare mode, toString is not preserved
+      // In default mode, toString is not preserved
       expect(obj.fn.toString()).toBe('custom')
     }
     finally {
@@ -1072,47 +1072,47 @@ describe('untouchable with bare option', () => {
     }
   })
 
-  test('default mode (bare: false) wraps toString', () => {
+  test('cloak mode wraps toString', () => {
     const obj = { fn: (x: number) => x }
 
-    untouchable(obj, 'fn', () => { })
+    untouchable(obj, 'fn', () => { }, { cloak: true })
 
-    // toString is a Proxy by default
+    // toString is a Proxy in cloak mode
     expect(isProxy1(obj.fn.toString)).toBe(true)
     expect(isProxy2(obj.fn.toString)).toBe(true)
   })
 
-  test('bare mode with replace option', () => {
+  test('cloak mode with replace option', () => {
     const obj = { fn: (x: number) => x * 2 }
 
     untouchable(obj, 'fn', (original, x) => {
       return original(x) + 1
-    }, { replace: true, bare: true })
+    }, { replace: true, cloak: true })
 
     expect(obj.fn(5)).toBe(11) // (5 * 2) + 1
 
-    expect(isProxy1(obj.fn.toString)).toBe(false)
+    expect(isProxy1(obj.fn.toString)).toBe(true)
   })
 
-  test('bare mode with bind option', () => {
+  test('cloak mode with bind option', () => {
     const ctx = { value: 10 }
     const obj = { fn: (x: number) => x }
 
     untouchable(obj, 'fn', function (_x) {
       expect(this).toBe(ctx)
-    }, { bare: true, bind: ctx })
+    }, { cloak: true, bind: ctx })
 
     obj.fn(5)
 
     expect(isProxy2(obj.fn)).toBe(false) // bind makes it undetectable
-    expect(isProxy2(obj.fn.toString)).toBe(false) // bare mode
+    expect(isProxy2(obj.fn.toString)).toBe(true) // cloak mode
   })
 
-  test('bare mode revoke works correctly', () => {
+  test('cloak mode revoke works correctly', () => {
     const obj = { fn: () => 1 }
     const original = obj.fn
 
-    const revoke = untouchable(obj, 'fn', () => { }, { bare: true })
+    const revoke = untouchable(obj, 'fn', () => { }, { cloak: true })
 
     expect(obj.fn).not.toBe(original)
 
@@ -1121,22 +1121,22 @@ describe('untouchable with bare option', () => {
     expect(obj.fn).toBe(original)
   })
 
-  test('bare mode allows setting other properties on proxy', () => {
-    const obj = { fn: () => 1 }
-
-    untouchable(obj, 'fn', () => { }, { bare: true });
-
-    // In bare mode, setting non-toString properties should work
-    (<any>obj.fn).customProp = 'test'
-    expect((obj.fn as any).customProp).toBe('test')
-  })
-
   test('default mode allows setting other properties on proxy', () => {
     const obj = { fn: () => 1 }
 
     untouchable(obj, 'fn', () => { });
 
-    // In default mode, setting non-toString properties should also work
+    // In default mode, setting non-toString properties should work
+    (<any>obj.fn).customProp = 'test'
+    expect((obj.fn as any).customProp).toBe('test')
+  })
+
+  test('cloak mode allows setting other properties on proxy', () => {
+    const obj = { fn: () => 1 }
+
+    untouchable(obj, 'fn', () => { }, { cloak: true });
+
+    // In cloak mode, setting non-toString properties should also work
     (<any>obj.fn).anotherProp = 'value'
     expect((obj.fn as any).anotherProp).toBe('value')
   })
@@ -1150,7 +1150,7 @@ describe('untouchable with bare option', () => {
 
     // Use bind option - this creates a bound function where setting toString doesn't trigger set trap
     const ctx = { value: 42 }
-    untouchable(obj, 'fn', () => { }, { bind: ctx })
+    untouchable(obj, 'fn', () => { }, { bind: ctx, cloak: true })
 
     // Accessing toString should work (triggers get trap on original proxy, then falls back)
     const toStr = obj.fn.toString

@@ -1,4 +1,4 @@
-import { untouchable } from '../dist/index.mjs'
+import { untouchable } from '../src'
 
 export interface Options {
   log(message?: any, ...optionalParams: any[]): void

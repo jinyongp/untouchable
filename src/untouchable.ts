@@ -99,7 +99,7 @@ export function untouchable<T extends Record<PropertyKey, any>, K extends Method
   options?: Options & { replace?: boolean },
 ): Revoke {
   const bind = options?.bind
-  const bare = options?.bare
+  const cloak = options?.cloak
   const previous = object[key]
   const previousToString = previous.toString
   let patchedToString: any
@@ -115,13 +115,13 @@ export function untouchable<T extends Record<PropertyKey, any>, K extends Method
       return Reflect.apply(previous, thisArg, args)
     },
     get(target, prop) {
-      if (!bare && prop === 'toString') {
+      if (cloak && prop === 'toString') {
         return patchedToString
       }
       return Reflect.get(target, prop)
     },
     set(target, prop, value) {
-      if (!bare && prop === 'toString') {
+      if (cloak && prop === 'toString') {
         patchedToString = value
         return true
       }
@@ -130,7 +130,7 @@ export function untouchable<T extends Record<PropertyKey, any>, K extends Method
   })
 
   const patched = bind ? proxy.bind(bind) : proxy
-  if (!bare) patched.toString = createToStringProxy(previousToString, previous)
+  if (cloak) patched.toString = createToStringProxy(previousToString, previous)
   object[key] = patched
 
   return () => {

@@ -84,32 +84,32 @@ export type Options = {
   bind?: object
 
   /**
-   * Use bare mode - skip wrapping toString with Proxy.
+   * Use cloak mode - wrap toString with Proxy for concealment.
    *
    * When true:
-   * - Only the function itself is wrapped with Proxy
-   * - The `toString` property is not modified
-   * - Slightly better performance and simpler behavior
-   *
-   * When false (default):
    * - Both function and toString are wrapped with Proxy
    * - Preserves toString behavior even when Function.prototype.toString is overridden
    * - More thorough concealment of the patch
+   *
+   * When false (default):
+   * - Only the function itself is wrapped with Proxy
+   * - The `toString` property is not modified
+   * - Slightly better performance and simpler behavior
    *
    * @example
    * ```ts
    * const obj = { fn: () => 'result' }
    *
-   * // Default - toString is also wrapped
+   * // Default - toString is not wrapped
    * untouchable(obj, 'fn', () => {})
-   * obj.fn.toString() // Returns original toString output
+   * obj.fn.toString() // May reflect runtime overrides
    *
-   * // Bare mode - toString is not wrapped
-   * untouchable(obj, 'fn', () => {}, { bare: true })
-   * obj.fn.toString // May behave differently
+   * // Cloak mode - toString is also wrapped
+   * untouchable(obj, 'fn', () => {}, { cloak: true })
+   * obj.fn.toString() // Returns preserved toString output
    * ```
    */
-  bare?: boolean
+  cloak?: boolean
 }
 
 /**

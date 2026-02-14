@@ -145,25 +145,49 @@ untouchable(counter, 'increment', function (original) {
 counter.increment() // Returns: 101 (uses customContext.count)
 ```
 
-## Bare Mode
+## Cloak Mode
 
-`bare` option disables extra wrapping for the patched function's `toString` property.
-By default, `untouchable` wraps `toString` so it preserves its output even when
-`Function.prototype.toString` is overwritten. Set `bare: true` to opt-out of
-that behavior and leave `toString` untouched.
+`cloak` option enables extra wrapping for the patched function's `toString` property.
+By default, `untouchable` does not wrap `toString`. Set `cloak: true` to opt-in
+to recursive `toString` wrapping (e.g., `fn.toString.toString...`) and additional
+concealment behavior.
 
 ```ts
-const obj = { fn: () => 'ok' }
+const objDefault = {
+  fn() {
+    return 'ok'
+  },
+}
 
-Function.prototype.toString = function () { return 'hacked' }
+const objCloak = {
+  fn() {
+    return 'ok'
+  },
+}
 
-// Default - toString is preserved by untouchable
-untouchable(obj, 'fn', () => {})
-console.log(obj.fn.toString()) // prints original function text
+import { isProxy } from 'node:util/types'
 
-// Bare mode - toString is NOT wrapped
-untouchable(obj, 'fn', () => {}, { bare: true })
-console.log(obj.fn.toString()) // prints 'hacked'
+const originalPrototypeToString = Function.prototype.toString
+
+try {
+  Function.prototype.toString = function () { return 'before' }
+
+  // Default - toString is NOT wrapped
+  untouchable(objDefault, 'fn', () => {})
+  console.log(objDefault.fn.toString()) // prints 'before'
+
+  // Cloak mode - toString is preserved by untouchable
+  untouchable(objCloak, 'fn', () => {}, { cloak: true })
+
+  console.log(objDefault.fn.toString()) // prints 'before'
+  console.log(objCloak.fn.toString()) // prints 'before'
+
+  console.log(isProxy(objDefault.fn.toString)) // false
+  console.log(isProxy(objCloak.fn.toString)) // true
+}
+finally {
+  Function.prototype.toString = originalPrototypeToString
+}
 ```
 
 ## API Reference
@@ -180,9 +204,9 @@ Patches a method on an object.
 - `options` - Optional configuration
   - `replace` - Set to `true` for replacer mode (default: `false`)
   - `bind` - Bind handler to specific context
-  - `bare` - When set to `true` the function's `toString` property will not be
-    wrapped; default is `false` which wraps `toString` to preserve a stable
-    output even if `Function.prototype.toString` is overridden
+  - `cloak` - When set to `true` the function's `toString` property is wrapped
+    to preserve a stable output even if `Function.prototype.toString` is
+    overridden; default is `false`
 
 #### Returns
 
@@ -204,7 +228,7 @@ type Replacer<T, K> = (
 // Options
 type UntouchableOptions = {
   bind?: object
-  bare?: boolean
+  cloak?: boolean
 }
 
 // Revoke function
@@ -217,7 +241,7 @@ Uses `Proxy.revocable()` to intercept function calls:
 
 1. Creates a revocable proxy around the target function
 2. Intercepts calls via the `apply` trap
-3. Preserves `toString` and other function properties
+3. Optionally preserves `toString` and other function properties
 4. Stacks patches by wrapping previous ones
 5. Restores to previous state on revoke
 
