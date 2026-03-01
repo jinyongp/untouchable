@@ -192,6 +192,22 @@ describe('untouchable revoke functionality', () => {
     expect(handler1).not.toHaveBeenCalled()
     expect(handler2).not.toHaveBeenCalled()
   })
+
+  test('out-of-order revoke does not restore a revoked proxy', () => {
+    const obj = { fn: () => 'original' }
+
+    const revoke1 = untouchable(obj, 'fn', () => { })
+    const revoke2 = untouchable(obj, 'fn', () => { })
+
+    // Revoke an earlier patch first (later patch becomes orphaned)
+    revoke1()
+    expect(obj.fn()).toBe('original')
+
+    // Revoking the orphaned patch must not bring back a revoked function
+    expect(() => revoke2()).not.toThrow()
+    expect(() => obj.fn()).not.toThrow()
+    expect(obj.fn()).toBe('original')
+  })
 })
 
 describe('untouchable with replace option', () => {
@@ -1141,20 +1157,61 @@ describe('untouchable with cloak option', () => {
     expect((obj.fn as any).anotherProp).toBe('value')
   })
 
-  test('get trap fallback to createToStringProxy when patchedToString is not set', () => {
+  test('bind mode exposes toString correctly in cloak mode', () => {
     const obj = {
       fn: function test() {
         return 1
       },
     }
 
-    // Use bind option - this creates a bound function where setting toString doesn't trigger set trap
     const ctx = { value: 42 }
     untouchable(obj, 'fn', () => { }, { bind: ctx, cloak: true })
 
-    // Accessing toString should work (triggers get trap on original proxy, then falls back)
     const toStr = obj.fn.toString
     expect(typeof toStr).toBe('function')
     expect(typeof toStr()).toBe('string')
+  })
+
+  test('cloak mode does not throw with non-configurable toString', () => {
+    const obj = {
+      fn() {
+        return 1
+      },
+    }
+
+    Object.defineProperty(obj.fn, 'toString', {
+      value() {
+        return 'locked'
+      },
+      configurable: false,
+      writable: false,
+    })
+
+    const revoke = untouchable(obj, 'fn', () => { }, { cloak: true })
+    expect(obj.fn.toString()).toBe('locked')
+    revoke()
+    expect(obj.fn.toString()).toBe('locked')
+  })
+
+  test('cloak mode supports accessor toString descriptor', () => {
+    const obj = {
+      fn() {
+        return 1
+      },
+    }
+
+    Object.defineProperty(obj.fn, 'toString', {
+      get() {
+        return function originalAccessorToString() {
+          return 'accessor'
+        }
+      },
+      configurable: false,
+    })
+
+    const revoke = untouchable(obj, 'fn', () => { }, { cloak: true })
+    expect(obj.fn.toString()).toBe('accessor')
+    revoke()
+    expect(obj.fn.toString()).toBe('accessor')
   })
 })

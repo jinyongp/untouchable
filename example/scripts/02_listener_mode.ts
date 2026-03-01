@@ -10,8 +10,8 @@ class UserService {
 export default example(async (untouchable, { log }) => {
   const service = new UserService()
 
-  const revoke = untouchable(service, 'login', (email, password) => {
-    log(`User login attempt: ${email} with password: ${password}`)
+  const revoke = untouchable(service, 'login', (email, _password) => {
+    log(`User login attempt: ${email}`)
   })
 
   await service.login('user1@example.com', 'password123')

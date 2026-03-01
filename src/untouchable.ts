@@ -1,5 +1,18 @@
-import type { Listener, Replacer, Options, Revoke, Methods } from './types'
-import { createToStringProxy } from './utils'
+import type {
+  Listener,
+  Replacer,
+  Options,
+  Revoke,
+  Methods,
+  AnyFunction,
+} from './types'
+import {
+  canInterceptToString,
+  createToStringProxy,
+  registerPatchMetadata,
+  resolveActiveFunction,
+  revokePatchMetadata,
+} from './utils'
 
 /**
  * Patches a method on an object to intercept calls with a listener.
@@ -101,7 +114,8 @@ export function untouchable<T extends Record<PropertyKey, any>, K extends Method
   const bind = options?.bind
   const cloak = options?.cloak
   const previous = object[key]
-  const previousToString = previous.toString
+  const previousToString = previous.toString as AnyFunction
+  const canProxyToString = !bind && !!cloak && canInterceptToString(previous)
   let patchedToString: any
 
   const { proxy, revoke: revokeProxy } = Proxy.revocable(previous, {
@@ -114,27 +128,34 @@ export function untouchable<T extends Record<PropertyKey, any>, K extends Method
       Reflect.apply(func, thisArg, args)
       return Reflect.apply(previous, thisArg, args)
     },
-    get(target, prop) {
-      if (cloak && prop === 'toString') {
+    get(target, prop, receiver) {
+      if (canProxyToString && prop === 'toString') {
         return patchedToString
       }
-      return Reflect.get(target, prop)
-    },
-    set(target, prop, value) {
-      if (cloak && prop === 'toString') {
-        patchedToString = value
-        return true
-      }
-      return Reflect.set(target, prop, value)
+      return Reflect.get(target, prop, receiver)
     },
   })
 
   const patched = bind ? proxy.bind(bind) : proxy
-  if (cloak) patched.toString = createToStringProxy(previousToString, previous)
+  if (cloak) {
+    patchedToString = createToStringProxy(previousToString, previous)
+
+    if (bind) {
+      Object.defineProperty(patched, 'toString', {
+        value: patchedToString,
+        configurable: true,
+        writable: true,
+      })
+    }
+  }
+
+  const metadata = registerPatchMetadata(patched, previous)
   object[key] = patched
 
   return () => {
+    if (!revokePatchMetadata(metadata)) return
+
     revokeProxy()
-    object[key] = previous
+    object[key] = resolveActiveFunction(metadata.previous) as T[K]
   }
 }

@@ -50,7 +50,7 @@ export type Replacer<
 /**
  * Options for configuring the untouchable patch behavior.
  */
-export type Options = {
+export interface Options {
   /**
    * Bind the handler/replacer to a specific context object.
    *
@@ -133,6 +133,16 @@ export type Revoke = () => void
 
 /** @internal */
 export type AnyFunction = (...args: any[]) => any
+
+/**
+ * Internal metadata for tracking patch revoke state.
+ *
+ * @internal
+ */
+export interface PatchMetadata {
+  previous: AnyFunction
+  revoked: boolean
+}
 
 /** @internal */
 export type Methods<T> = {
