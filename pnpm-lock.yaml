@@ -9,46 +9,46 @@ importers:
   .:
     devDependencies:
       '@eslint/js':
-        specifier: ^10.0.1
+        specifier: 10.0.1
         version: 10.0.1(eslint@10.0.2(jiti@2.6.1))
       '@stylistic/eslint-plugin':
-        specifier: ^5.9.0
+        specifier: 5.9.0
         version: 5.9.0(eslint@10.0.2(jiti@2.6.1))
       '@types/node':
-        specifier: ^22.19.1
+        specifier: 22.19.1
         version: 22.19.1
       '@vitest/coverage-v8':
-        specifier: ^4.0.18
+        specifier: 4.0.18
         version: 4.0.18(vitest@4.0.18(@types/node@22.19.1)(jiti@2.6.1)(tsx@4.20.6))
       consola:
-        specifier: ^3.4.2
+        specifier: 3.4.2
         version: 3.4.2
       eslint:
-        specifier: ^10.0.2
+        specifier: 10.0.2
         version: 10.0.2(jiti@2.6.1)
       globals:
-        specifier: ^17.4.0
+        specifier: 17.4.0
         version: 17.4.0
       is-proxy:
-        specifier: ^1.0.6
+        specifier: 1.0.6
         version: 1.0.6
       jiti:
-        specifier: ^2.6.1
+        specifier: 2.6.1
         version: 2.6.1
       npm-run-all:
-        specifier: ^4.1.5
+        specifier: 4.1.5
         version: 4.1.5
       tsdown:
         specifier: 0.21.0-beta.2
         version: 0.21.0-beta.2(typescript@5.9.3)
       typescript:
-        specifier: ^5.9.3
+        specifier: 5.9.3
         version: 5.9.3
       typescript-eslint:
-        specifier: ^8.56.1
+        specifier: 8.56.1
         version: 8.56.1(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3)
       vitest:
-        specifier: ^4.0.18
+        specifier: 4.0.18
         version: 4.0.18(@types/node@22.19.1)(jiti@2.6.1)(tsx@4.20.6)
 
 packages:
