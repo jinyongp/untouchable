@@ -18,6 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       changed: ${{ steps.check.outputs.changed }}
+      reason: ${{ steps.check.outputs.reason }}
+      before_version: ${{ steps.check.outputs.before_version }}
+      after_version: ${{ steps.check.outputs.after_version }}
+      published_version: ${{ steps.check.outputs.published_version }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -35,6 +39,14 @@ jobs:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_EVENT_BEFORE: ${{ github.event.before }}
         run: npx --yes jiti scripts/check-release-version.ts
+
+      - name: Print release decision
+        run: |
+          echo "should_publish=${{ steps.check.outputs.changed }}"
+          echo "reason=${{ steps.check.outputs.reason }}"
+          echo "before_version=${{ steps.check.outputs.before_version }}"
+          echo "after_version=${{ steps.check.outputs.after_version }}"
+          echo "published_version=${{ steps.check.outputs.published_version }}"
 
   publish-npm:
     needs: version-check
