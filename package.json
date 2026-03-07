@@ -48,6 +48,7 @@
     "test:example": "jiti example/index.ts"
   },
   "devDependencies": {
+    "@arethetypeswrong/core": "0.18.2",
     "@eslint/js": "10.0.1",
     "@stylistic/eslint-plugin": "5.9.0",
     "@types/node": "22.19.1",
@@ -58,6 +59,7 @@
     "is-proxy": "1.0.6",
     "jiti": "2.6.1",
     "npm-run-all": "4.1.5",
+    "publint": "0.3.18",
     "tsdown": "0.21.0-beta.2",
     "typescript": "5.9.3",
     "typescript-eslint": "8.56.1",

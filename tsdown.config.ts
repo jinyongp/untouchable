@@ -15,5 +15,8 @@ export default defineConfig({
   shims: true,
   clean: true,
 
+  attw: true,
+  publint: true,
+
   format: ['esm', 'cjs'],
 })
